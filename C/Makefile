@@ -109,7 +109,6 @@ $(SULLY): $(SULLY_OBJ)
 
 test_sully: $(SULLY)
 	@echo "$(COLOR_CYAN)[*] Testing $(SULLY)...$(COLOR_RESET)"
-	@echo "$(COLOR_YELLOW)    Warning: Creates many files during recursion$(COLOR_RESET)"
 	@./$(SULLY)
 	@if [ -f Sully_0.c ]; then \
 		echo "$(COLOR_GREEN)[OK] $(SULLY): Recursion completed (Sully_0.c created).$(COLOR_RESET)"; \
