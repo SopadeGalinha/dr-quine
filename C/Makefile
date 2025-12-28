@@ -29,10 +29,8 @@ SULLY_OBJ	= $(SULLY_SRC:.c=.o)
 # Utility Variables
 RM			= rm -f
 
-# ==============================================================================
-# COLOR DEFINITIONS (ANSI Escape Codes)
-# ==============================================================================
 
+# Colors Definitions (ANSI Escape Codes)
 COLOR_RESET	= \033[0m
 COLOR_RED	= \033[0;31m
 COLOR_GREEN	= \033[0;32m
@@ -40,11 +38,7 @@ COLOR_YELLOW	= \033[0;33m
 COLOR_BLUE	= \033[0;34m
 COLOR_CYAN	= \033[0;36m
 
-
-# ==============================================================================
-# MAIN RULES
-# ==============================================================================
-
+# Main rules
 all: $(ALL_TARGETS)
 	@echo "$(COLOR_GREEN)[✓] All programs compiled successfully.$(COLOR_RESET)"
 
@@ -55,7 +49,6 @@ re: fclean all
 # ==============================================================================
 
 colleen: $(COLLEEN)
-
 $(COLLEEN): $(COLLEEN_OBJ)
 	@$(CC) $(CFLAGS) $(COLLEEN_OBJ) -o $(COLLEEN)
 	@echo "$(COLOR_GREEN)[✓] $(COLLEEN) compiled.$(COLOR_RESET)"
@@ -112,37 +105,40 @@ test_sully: $(SULLY)
 	@./$(SULLY)
 	@if [ -f Sully_0.c ]; then \
 		echo "$(COLOR_GREEN)[OK] $(SULLY): Recursion completed (Sully_0.c created).$(COLOR_RESET)"; \
-		if diff Sully_0.c $(SULLY_SRC) | grep "^<.*int i = 0" > /dev/null && \
-		   diff Sully_0.c $(SULLY_SRC) | grep "^>.*int i = 5" > /dev/null; then \
-			echo "$(COLOR_GREEN)[OK] $(SULLY): Decrement logic verified.$(COLOR_RESET)"; \
+		if diff Sully_5.c $(SULLY_SRC) > /dev/null 2>&1; then \
+			echo "$(COLOR_GREEN)[OK] $(SULLY): Sully_5.c matches source exactly.$(COLOR_RESET)"; \
+		else \
+			echo "$(COLOR_RED)[KO] $(SULLY): Sully_5.c differs from source!$(COLOR_RESET)"; \
+		fi; \
+		ALL_MATCH=1; \
+		for i in `seq 0 4`; do \
+			if ! diff Sully_$$i.c $(SULLY_SRC) | grep -v "int i =" > /dev/null 2>&1; then \
+				echo "$(COLOR_RED)[KO] $(SULLY): Sully_$$i.c differs from source (excluding 'int i =').$(COLOR_RESET)"; \
+				ALL_MATCH=0; \
+				break; \
+			fi; \
+		done; \
+		if [ $$ALL_MATCH -eq 1 ]; then \
+			echo "$(COLOR_GREEN)[OK] $(SULLY): All generated files match source (excluding 'int i =').$(COLOR_RESET)"; \
 		fi; \
 	else \
 		echo "$(COLOR_RED)[KO] $(SULLY): Sully_0.c not found!$(COLOR_RESET)"; \
 	fi
-	@echo "$(COLOR_YELLOW)    Cleaning up generated files...$(COLOR_RESET)"
-	@$(RM) Sully_*.c Sully_* 2>/dev/null || true
+
 
 # ==============================================================================
-# TESTING
+# TESTING AND CLEANUP
 # ==============================================================================
-
 test: test_colleen test_grace test_sully
 	@echo "$(COLOR_GREEN)[✓] All tests completed.$(COLOR_RESET)"
-
-# ==============================================================================
-# COMPILATION RULES
-# ==============================================================================
 
 %.o: %.c
 	@$(CC) $(CFLAGS) -c $< -o $@
 
-# ==============================================================================
-# CLEANUP RULES
-# ==============================================================================
-
 clean:
 	@$(RM) $(COLLEEN_OBJ) $(GRACE_OBJ) $(SULLY_OBJ)
-	@echo "$(COLOR_YELLOW)[*] Object files removed.$(COLOR_RESET)"
+	@$(RM) Sully_*.c Sully_* 2>/dev/null || true
+	@echo "$(COLOR_YELLOW)[*] Object and generated files removed.$(COLOR_RESET)"
 
 fclean: clean
 	@$(RM) $(ALL_TARGETS)
@@ -150,10 +146,6 @@ fclean: clean
 	@$(RM) Grace_kid.c
 	@$(RM) Sully_*.c Sully_* 2>/dev/null || true
 	@echo "$(COLOR_YELLOW)[*] All generated files removed.$(COLOR_RESET)"
-
-# ==============================================================================
-# HELP
-# ==============================================================================
 
 help:
 	@echo "$(COLOR_BLUE)"
