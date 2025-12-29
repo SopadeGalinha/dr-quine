@@ -126,6 +126,21 @@ test_sully: $(SULLY)
 		else \
 			echo "$(COLOR_RED)[KO] $(SULLY): Sully_5.s differs from source!$(COLOR_RESET)"; \
 		fi; \
+		for i in 0 1 2 3 4; do \
+			if [ ! -f Sully_$$i.s ]; then \
+				echo "$(COLOR_RED)[KO] $(SULLY): Sully_$$i.s not found!$(COLOR_RESET)"; \
+				continue; \
+			fi; \
+			sed 's/mov dword\[rbp-0x8\], [0-9][0-9]*/mov dword[rbp-0x8], IDX/' Sully.s > /tmp/sully_base_$$i; \
+			sed 's/mov dword\[rbp-0x8\], [0-9][0-9]*/mov dword[rbp-0x8], IDX/' Sully_$$i.s > /tmp/sully_cmp_$$i; \
+			if diff /tmp/sully_base_$$i /tmp/sully_cmp_$$i > /dev/null 2>&1; then \
+				echo "$(COLOR_GREEN)[OK] $(SULLY): Sully.s vs Sully_$$i.s differ only by index.$(COLOR_RESET)"; \
+			else \
+				echo "$(COLOR_RED)[KO] $(SULLY): Unexpected diffs between Sully.s and Sully_$$i.s.$(COLOR_RESET)"; \
+				diff -u /tmp/sully_base_$$i /tmp/sully_cmp_$$i || true; \
+			fi; \
+			rm -f /tmp/sully_base_$$i /tmp/sully_cmp_$$i; \
+		done; \
 	else \
 		echo "$(COLOR_RED)[KO] $(SULLY): Sully_0.s not found! (Recursion incomplete)$(COLOR_RESET)"; \
 	fi || true
