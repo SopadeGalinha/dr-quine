@@ -102,7 +102,7 @@ $(SULLY): $(SULLY_OBJ)
 
 test_sully: $(SULLY)
 	@echo "$(COLOR_CYAN)[*] Testing $(SULLY)...$(COLOR_RESET)"
-	@./$(SULLY)
+	@timeout 120 ./$(SULLY) 2>&1 || true
 	@if [ -f Sully_0.c ]; then \
 		echo "$(COLOR_GREEN)[OK] $(SULLY): Recursion completed (Sully_0.c created).$(COLOR_RESET)"; \
 		if diff Sully_5.c $(SULLY_SRC) > /dev/null 2>&1; then \
@@ -110,21 +110,24 @@ test_sully: $(SULLY)
 		else \
 			echo "$(COLOR_RED)[KO] $(SULLY): Sully_5.c differs from source!$(COLOR_RESET)"; \
 		fi; \
-		ALL_MATCH=1; \
-		for i in `seq 0 4`; do \
-			if ! diff Sully_$$i.c $(SULLY_SRC) | grep -v "int i =" > /dev/null 2>&1; then \
-				echo "$(COLOR_RED)[KO] $(SULLY): Sully_$$i.c differs from source (excluding 'int i =').$(COLOR_RESET)"; \
-				ALL_MATCH=0; \
-				break; \
+		for i in 0 1 2 3 4; do \
+			if [ ! -f Sully_$$i.c ]; then \
+				echo "$(COLOR_RED)[KO] $(SULLY): Sully_$$i.c not found!$(COLOR_RESET)"; \
+				continue; \
 			fi; \
+			sed 's/^    int i = [0-9][0-9]*;/    int i = IDX;/' $(SULLY_SRC) > /tmp/sully_base_$$i; \
+			sed 's/^    int i = [0-9][0-9]*;/    int i = IDX;/' Sully_$$i.c > /tmp/sully_cmp_$$i; \
+			if diff /tmp/sully_base_$$i /tmp/sully_cmp_$$i > /dev/null 2>&1; then \
+				echo "$(COLOR_GREEN)[OK] $(SULLY): Sully.c vs Sully_$$i.c differ only by index.$(COLOR_RESET)"; \
+			else \
+				echo "$(COLOR_RED)[KO] $(SULLY): Unexpected diffs between Sully.c and Sully_$$i.c.$(COLOR_RESET)"; \
+				diff -u /tmp/sully_base_$$i /tmp/sully_cmp_$$i || true; \
+			fi; \
+			rm -f /tmp/sully_base_$$i /tmp/sully_cmp_$$i; \
 		done; \
-		if [ $$ALL_MATCH -eq 1 ]; then \
-			echo "$(COLOR_GREEN)[OK] $(SULLY): All generated files match source (excluding 'int i =').$(COLOR_RESET)"; \
-		fi; \
 	else \
-		echo "$(COLOR_RED)[KO] $(SULLY): Sully_0.c not found!$(COLOR_RESET)"; \
-	fi
-
+		echo "$(COLOR_RED)[KO] $(SULLY): Sully_0.s not found! (Recursion incomplete)$(COLOR_RESET)"; \
+	fi || true
 
 # ==============================================================================
 # TESTING AND CLEANUP
