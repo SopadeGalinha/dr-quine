@@ -4,13 +4,19 @@ A collection of quine implementations in multiple programming languages. A quine
 
 ## Overview
 
-This project contains three different quine implementations (Colleen, Grace, and Sully) written in C, Python, and Assembly(x86-64).
+This project contains three different quine implementations (Colleen, Grace, and Sully) written in C, Python, and Assembly (x86-64).
 
 ### What is a Quine?
 
 A quine is a self-replicating computer program that produces its own source code as output without:
 - Reading its own source file
 - Using trivial solutions like empty programs or error messages
+
+## Quine Variants
+
+- **Colleen**: Minimal quine that simply prints its own source to stdout.
+- **Grace**: Writes its source to a sibling file (`Grace_kid`) without reading the original file from disk.
+- **Sully**: Self-replicates recursively, producing numbered copies (`Sully_n`) that decrement a counter and stop at zero.
 
 ## Project Structure
 
@@ -40,7 +46,8 @@ dr-quine/
 
 ```bash
 cd C
-make
+make            # build all
+make test       # run quine tests for C
 ./Colleen
 ./Grace
 ./Sully
@@ -50,6 +57,7 @@ make
 
 ```bash
 cd Python
+make test       # run quine tests for Python
 python3 Colleen.py
 python3 Grace.py
 python3 Sully.py
@@ -59,7 +67,8 @@ python3 Sully.py
 
 ```bash
 cd ASM
-make
+make            # build all
+make test       # run quine tests for ASM
 ./Colleen
 ./Grace
 ./Sully
@@ -77,11 +86,16 @@ $ diff output.c Colleen.c
 
 The above commands should produce no differences, confirming the quine is working correctly.
 
-## Quine Variants
+## Testing
 
-- **Colleen**: The basic, simple quine implementation
-- **Grace**: A more complex quine variant
-- **Sully**: An even more sophisticated quine variant
+- Each language folder has its own `Makefile` with a `test` target that exercises all three quines and compares the generated output against the sources. For Sully, the tests ensure the recursion reaches `Sully_0` and that generated files differ only by the decremented counter.
+- Use `make fclean` in each folder to remove generated artifacts (e.g., `Sully_*`, `Grace_kid.*`).
+
+## Requirements
+
+- Build tools: `make`, `clang` (for C), `gcc` (linker for ASM), `nasm` (assembler), `python3`.
+- The ASM targets assume an x86-64 Linux environment.
+
 
 ## Implementation Details
 
@@ -95,3 +109,4 @@ Each language has different approaches to solving the quine problem:
 
 - [Wikipedia: Quine (computing)](https://en.wikipedia.org/wiki/Quine_(computing))
 - [The Quine Page](http://www.nyx.net/~gthompso/quine.htm)
+- [Dr. Quine subject (PDF)](subject_en.pdf)
