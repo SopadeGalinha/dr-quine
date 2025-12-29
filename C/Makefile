@@ -137,7 +137,6 @@ test: test_colleen test_grace test_sully
 
 clean:
 	@$(RM) $(COLLEEN_OBJ) $(GRACE_OBJ) $(SULLY_OBJ)
-	@$(RM) Sully_*.c Sully_* 2>/dev/null || true
 	@echo "$(COLOR_YELLOW)[*] Object and generated files removed.$(COLOR_RESET)"
 
 fclean: clean
